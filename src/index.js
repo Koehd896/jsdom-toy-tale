@@ -2,6 +2,7 @@ let addToy = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchToys();
+  addLikeListener();
   const addBtn = document.querySelector("#new-toy-btn");
   const toyFormContainer = document.querySelector(".container");
   addBtn.addEventListener("click", () => {
@@ -15,39 +16,52 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+const toyDiv = document.getElementById("toy-collection");
+const cards = toyDiv.children;
+function addLikeListener() {
+  for (card of cards) {
+    // card.children[3].addEventListener("click", addLike);
+    console.log(card.children[3])
+  }
+}
+
 function fetchToys() {
   fetch("http://localhost:3000/toys")
   .then(resp => resp.json())
   .then(function(toys) {
-    const toyDiv = document.getElementById("toy-collection");
     for (const toy of toys) {
       const id = toy.id;
-      const card = createCard(id);
-      updateCard(card, toy);
-      toyDiv.appendChild(card);
+      toyDiv.innerHTML += `
+        <div class="card" id=${id}>
+        <h2>${toy.name}</h2>
+        <img src="${toy.image}"/>
+        <p>${toy.likes}</p>
+        <button class='like-btn'>Like</button>
+        </div>`;
     }
   })
 }
 
-function createCard(id) {
-  const card = document.createElement("div");
-  card.className = "card";
-  const h2 = document.createElement("h2");
-  const img = document.createElement("img");
-  const p = document.createElement("p");
-  const button = document.createElement("button");
-  button.className = "like-btn";
-  button.innerText = "Like";
-  card.append(h2, img, p, button);
-  button.addEventListener("click", addLike(id, card));
-  return card;
-}
+// function createCard(id) {
+//   // const card = document.createElement("div");
+//   // card.className = "card";
+//   // const h2 = document.createElement("h2");
+//   // const img = document.createElement("img");
+//   // const p = document.createElement("p");
+//   // const button = document.createElement("button");
+//   // button.className = "like-btn";
+//   // button.innerText = "Like";
+//   // card.append(h2, img, p, button);
+//   // button.addEventListener("click", addLike(id, card));
+//   // return card;
 
-function updateCard(card, toy) {
-  card.querySelector("h2").innerText = toy.name;
-  card.querySelector("img").src = toy.image;
-  card.querySelector("p").innerText = toy.likes;
-}
+  
+
+  
+
+// }
+
+
 
 function newToy(name, image) {
   const toyData = {
@@ -80,8 +94,9 @@ toyForm.addEventListener("submit", event => {
   newToy(toyName, toyImg);
 })
 
-function addLike(id, card) {
-  const currentLikes = card.children[2].value;
+function addLike(event) {
+  const id = event.target.id;
+  const add = event.target.children[2].value + 1;
   const configObj = {
     method: "PATCH",
     headers: {
@@ -89,10 +104,10 @@ function addLike(id, card) {
       "Accepts": "application/json"
     },
     body: JSON.stringify({
-      likes: currentLikes + 1
+      likes: add
     })
   }
   fetch(`http://localhost:3000/toys/${id})`, configObj)
   .then(rsp => rsp.json())
-  .then(data => console.log(data));
+  .then(data => event.target.children[2].value = add);
 }
