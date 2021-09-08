@@ -21,14 +21,15 @@ function fetchToys() {
   .then(function(toys) {
     const toyDiv = document.getElementById("toy-collection");
     for (const toy of toys) {
-      const card = createCard();
+      const id = toy.id;
+      const card = createCard(id);
       updateCard(card, toy);
       toyDiv.appendChild(card);
     }
   })
 }
 
-function createCard() {
+function createCard(id) {
   const card = document.createElement("div");
   card.className = "card";
   const h2 = document.createElement("h2");
@@ -38,7 +39,7 @@ function createCard() {
   button.className = "like-btn";
   button.innerText = "Like";
   card.append(h2, img, p, button);
-  button.addEventListener("click", addLike);
+  button.addEventListener("click", addLike(id, card));
   return card;
 }
 
@@ -79,9 +80,8 @@ toyForm.addEventListener("submit", event => {
   newToy(toyName, toyImg);
 })
 
-function addLike(event) {
-  console.log(event.target.parentNode)
-  const id = event.target.parentNode.id
+function addLike(id, card) {
+  const currentLikes = card.children[2].value;
   const configObj = {
     method: "PATCH",
     headers: {
@@ -89,7 +89,7 @@ function addLike(event) {
       "Accepts": "application/json"
     },
     body: JSON.stringify({
-      // object with new number of likes
+      likes: currentLikes + 1
     })
   }
   fetch(`http://localhost:3000/toys/${id})`, configObj)
